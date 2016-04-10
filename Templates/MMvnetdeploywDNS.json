@@ -1,0 +1,111 @@
+﻿{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+  "parameters": {
+    "vNetPrefix": {
+      "type": "string",
+      "defaultValue": "192.168.0.0/16",
+      "metadata": { "Description": "The network prefix used for this vNet, for example 192.168.0.0/16" }
+    },
+    "vNetName": {
+      "type": "string",
+      "defaultValue": "vn20p001",
+      "metadata": { "Description": "The name used for this vNet." }
+    },
+    "vNetPerimeterSubnetName": {
+      "type": "string",
+      "defaultValue": "sn20vnp001pm01",
+      "metadata": { "Description": "The name of the perimeter (DMZ) subnet" }
+    },
+    "vNetPerimeterPrefix": {
+      "type": "string",
+      "defaultValue": "192.168.1.0/24",
+      "metadata": { "Description": "The network prefix used for the perimeter subnet, for example 192.168.1.0/16" }
+    },
+    "vNetFrontEndSubnetName": {
+      "type": "string",
+      "defaultValue": "sn20vnp001fe01",
+      "metadata": { "Description": "The name of the frontend subnet" }
+    },
+    "vNetFrontEndPrefix": {
+      "type": "string",
+      "defaultValue": "192.168.2.0/24",
+      "metadata": { "Description": "The network prefix used for the frontend subnet, for example 192.168.2.0/16" }
+    },
+    "vNetBackEndSubnetName": {
+      "type": "string",
+      "defaultValue": "sn20vnp001be01",
+      "metadata": { "Description": "The name of the backend subnet" }
+    },
+    "vNetBackEndPrefix": {
+      "type": "string",
+      "defaultValue": "192.168.3.0/24",
+      "metadata": { "Description": "The network prefix used for the backend subnet, for example 192.168.3.0/16" }
+    },
+    "vNetGatewayPrefix": {
+      "type": "string",
+      "defaultValue": "192.168.0.0/28",
+      "metadata": { "Description": "The network prefix used for the gateway subnet, for example 192.168.0.0/28" }
+    },
+    "vNetDNSServers": {
+      "type": "array",
+      "metadata": {
+        "Description": "The DNS Servers"
+      }
+    }
+
+  },
+  "variables": {
+    
+  },
+    "resources": [
+        {
+            "name": "[Parameters('vNetName')]",
+            "type": "Microsoft.Network/virtualNetworks",
+            "location": "[resourceGroup().location]",
+            "apiVersion": "2015-05-01-preview",
+            "dependsOn": [ ],
+          "tags": {
+            "displayName": "[Parameters('vNetName')]"
+          },
+            "properties": {
+              "addressSpace": {
+                "addressPrefixes": [
+                  "[Parameters('vNetPrefix')]"
+                ]
+              },
+              "dhcpOptions": {
+                "dnsServers": "[Parameters('vNetDNSServers')]"
+              },
+              "subnets": [
+                {
+                  "name": "[Parameters('vNetPerimeterSubnetName')]",
+                  "properties": {
+                    "addressPrefix": "[Parameters('vNetPerimeterPrefix')]"
+                  }
+                },
+                {
+                  "name": "[Parameters('vNetFrontEndSubnetName')]",
+                  "properties": {
+                    "addressPrefix": "[Parameters('vNetFrontEndPrefix')]"
+                  }
+                },
+                {
+                  "name": "[Parameters('vNetBackEndSubnetName')]",
+                  "properties": {
+                    "addressPrefix": "[Parameters('vNetBackEndPrefix')]"
+                  }
+                },
+                {
+                  "name": "GatewaySubnet",
+                  "properties": {
+                    "addressPrefix": "[Parameters('vNetGatewayPrefix')]"
+                  }
+                }
+              ]
+            }
+        }
+    ],
+    "outputs": {
+    }
+}
