@@ -185,7 +185,7 @@
     "apiVersionStorage": "2015-06-15",
     "virtualNetworkName": "parameters('virtualNetworkName')",
     "adPDCVMName": "parameters('adPDCVMName')",
-    "VnetID": "[resourceId(parameters('networkResourceGroup'),'Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]",
+    "VnetID": "[resourceId(parameters('networkResourceGroup'),'Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]",
 
     "sqlSubnetName": "parameters(sqlSubnetName)",
     "sqlSubnetRef": "[concat(variables('vnetID'),'/subnets/',variables('sqlSubnetName'))]",
