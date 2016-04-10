@@ -5,7 +5,7 @@
     "storageAccountName": {
       "type": "string",
       "metadata": {
-        "description": "Naming prefix for each new storage account created. Four storage accounts will be created using this string as a prefix for the name. 18-char max, lowercase alpha"
+        "description": "Name of storage account"
       }
     },
 
@@ -80,7 +80,7 @@
       "metadata": {
         "description": "DNS domain name for the Active Directory domain to be created"
       },
-      "defaultValue": "contoso.com"
+      "defaultValue": "azure.test"
     },
 
     "sqlServerServiceAccountUserName": {
@@ -107,14 +107,14 @@
     "adminUsername": {
       "type": "string",
       "metadata": {
-        "description": "Name of the Administrator of the new VMs and Domain"
+        "description": "Domain admin user name"
       }
     },
 
     "adminPassword": {
       "type": "securestring",
       "metadata": {
-        "description": "Password for the Administrator account of the new VMs and Domain"
+        "description": "Domain admin password"
       }
     },
 
@@ -123,7 +123,7 @@
       "metadata": {
         "description": "Location of resources that the script is dependent on such as linked templates and DSC modules"
       },
-      "defaultValue": "https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/sql-server-2014-alwayson-dsc"
+      "defaultValue": "https://raw.githubusercontent.com/danielboth/AzureMM/master/Templates/sql-server-2014-alwayson-dsc"
     },
 
     "location": {
@@ -157,8 +157,7 @@
       "type": "string",
       "metadata": {
         "description": "IP address of ILB for the new SQL Server AlwaysOn listener to be created"
-      },
-      "defaultValue": "10.0.1.10"
+      }
     },
 
     "dataBaseNames": {
@@ -184,7 +183,7 @@
     "apiVersionVirtualMachines": "2015-06-15",
     "apiVersionVMExtensions": "2015-06-15",
     "apiVersionStorage": "2015-06-15",
-    "virtualNetworkName": "parameters(virtualNetworkName)",
+    "virtualNetworkName": "parameters('virtualNetworkName')",
     "adPDCVMName": "parameters('adPDCVMName')",
     "VnetID": "[resourceId(parameters('networkResourceGroup'),'Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]",
 
@@ -199,19 +198,6 @@
     "sqlWitnessStorageName": "(parameters('storageAccountName')",
     "deploySqlWitnessVms": "deploySqlWitnessVms",
     "deploySqlWitnessVmsId": "[concat('Microsoft.Resources/deployments/', variables('deploySqlWitnessVms'))]",
-
-    "updateSQLWNic": "updateSQLWNic",
-    "updateSQLWNicId": "[concat('Microsoft.Resources/deployments/', variables('updateSQLWNic'))]",
-    "sqlwNicName": "SqlWitnessMachine-Nic-0",
-    "nicTemplateURL": "[concat(parameters('assetLocation'),'/nic.json')]",
-
-    "updateSQLCNic1": "updateSQLCNic1",
-    "updateSQLCNic1Id": "[concat('Microsoft.Resources/deployments/', variables('updateSQLCNic1'))]",
-    "sqlNicName1": "SqlMachine-Nic-0",
-
-    "updateSQLCNic2": "updateSQLCNic2",
-    "updateSQLCNic2Id": "[concat('Microsoft.Resources/deployments/', variables('updateSQLCNic2'))]",
-    "sqlNicName2": "SqlMachine-Nic-1",
 
     "publicLBName": "sqlLoadBalancer",
     "lbFE": "SqlLBFE",
@@ -255,7 +241,6 @@
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "[variables('apiVersion')]",
       "dependsOn": [
-        "[variables('virtualNetworkName')]",
         "[resourceId('Microsoft.Compute/availabilitySets', variables('sqlAvailabilitySetName'))]"
       ],
       "properties": {
@@ -283,7 +268,6 @@
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "[variables('apiVersion')]",
       "dependsOn": [
-        "[variables('virtualNetworkName')]",
         "[resourceId('Microsoft.Compute/availabilitySets', variables('sqlAvailabilitySetName'))]"
       ],
       "properties": {
@@ -299,137 +283,17 @@
           "storageAccount": { "value": "[variables('sqlWitnessStorageName')]" },
           "subnetUri": { "value": "[variables('sqlSubnetRef')]" },
           "vmNamePrefix": { "value": "[variables('sqlWitnessVmNamePrefix')]" },
-          "vmSize": { "value": "[parameters('sqlWitnessVMSize')]" },
-          "availabilitySetName": { "value": "[variables('sqlAvailabilitySetName')]" }
+          "vmSize": { "value": "[parameters('sqlWitnessVMSize')]" }
         }
       }
     },
 
     {
-      "name": "[variables('updateSQLWNic')]",
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "[variables('apiVersion')]",
-      "dependsOn": [
-        "[variables('deploySqlWitnessVmsId')]"
-      ],
-      "properties": {
-        "mode": "Incremental",
-        "templateLink": {
-          "uri": "[variables('nicTemplateURL')]",
-          "contentVersion": "1.0.0.0"
-        },
-        "parameters": {
-          "location": {
-            "value": "[parameters('location')]"
-          },
-          "nicName": {
-            "value": "[variables('sqlwNicName')]"
-          },
-          "ipConfigurations": {
-            "value": [
-              {
-                "name": "ipconfig1",
-                "properties": {
-                  "privateIPAllocationMethod": "Dynamic",
-                  "subnet": {
-                    "id": "[variables('sqlSubnetRef')]"
-                  }
-                }
-              }
-            ]
-          }
-        }
-      }
-    },
-    {
-      "name": "[variables('updateSQLCNic1')]",
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "[variables('apiVersion')]",
-      "dependsOn": [
-        "[variables('deploySqlClusterVmsId')]"
-      ],
-      "properties": {
-        "mode": "Incremental",
-        "templateLink": {
-          "uri": "[variables('nicTemplateURL')]",
-          "contentVersion": "1.0.0.0"
-        },
-        "parameters": {
-          "location": {
-            "value": "[parameters('location')]"
-          },
-          "nicName": {
-            "value": "[variables('sqlNicName1')]"
-          },
-          "ipConfigurations": {
-            "value": [
-              {
-                "name": "ipconfig1",
-                "properties": {
-                  "privateIPAllocationMethod": "Dynamic",
-                  "subnet": {
-                    "id": "[variables('sqlSubnetRef')]"
-                  },
-                "loadBalancerBackendAddressPools": [
-                  {
-                    "id":"[variables('sqlBEAddressPoolID')]"
-                  }
-		 ]
-                }
-              }
-            ]
-          }
-        }
-      }
-    },
-    {
-      "name": "[variables('updateSQLCNic2')]",
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "[variables('apiVersion')]",
-      "dependsOn": [
-        "[variables('deploySqlClusterVmsId')]",
-        "[variables('updateSQLCNic1Id')]"
-      ],
-      "properties": {
-        "mode": "Incremental",
-        "templateLink": {
-          "uri": "[variables('nicTemplateURL')]",
-          "contentVersion": "1.0.0.0"
-        },
-        "parameters": {
-          "location": {
-            "value": "[parameters('location')]"
-          },
-          "nicName": {
-            "value": "[variables('sqlNicName2')]"
-          },
-          "ipConfigurations": {
-            "value": [
-              {
-                "name": "ipconfig1",
-                "properties": {
-                  "privateIPAllocationMethod": "Dynamic",
-                  "subnet": {
-                    "id": "[variables('sqlSubnetRef')]"
-                  },
-                "loadBalancerBackendAddressPools": [
-                  {
-                    "id":"[variables('sqlBEAddressPoolID')]"
-                  }
-		 ]
-                }
-              }
-            ]
-          }
-        }
-      }
-    },
-    {
       "name": "[variables('deploySqlWitnessShare')]",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "[variables('apiVersion')]",
       "dependsOn": [
-        "[variables('updateSQLWNicId')]"
+        "[resourceId('Microsoft.Resources/deployments', variables('deploySqlWitnessVms'))]"
       ],
       "properties": {
         "mode": "Incremental",
@@ -453,8 +317,7 @@
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "[variables('apiVersion')]",
       "dependsOn": [
-        "[variables('updateSQLCNic1Id')]",
-        "[variables('updateSQLCNic2Id')]"
+        "[variables('deploySqlClusterVmsId')]"
       ],
       "properties": {
         "mode": "Incremental",

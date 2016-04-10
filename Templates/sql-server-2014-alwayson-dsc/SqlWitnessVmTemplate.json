@@ -48,18 +48,6 @@
       }
     },
 
-    "storageAccountType": {
-      "type": "string",
-      "allowedValues": [
-        "Standard_LRS",
-        "Standard_GRS",
-        "Standard_RAGRS",
-        "Premium_LRS"
-      ],
-      "metadata": {
-        "description": "The type of the Storage Account created"
-      }
-    },
     "adminUsername": {
       "type": "string",
       "metadata": {
